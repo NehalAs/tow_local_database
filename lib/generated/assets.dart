@@ -3,14 +3,14 @@ class Assets {
   Assets._();
 
   static const String booksBook = 'assets/images/books/book.png';
-  static const String booksBook(1) = 'assets/images/books/book(1).png';
-  static const String booksBook(2) = 'assets/images/books/book(2).png';
-  static const String booksBook(3) = 'assets/images/books/book(3).png';
-  static const String booksBook(4) = 'assets/images/books/book(4).png';
-  static const String booksBook(5) = 'assets/images/books/book(5).png';
-  static const String booksBook(6) = 'assets/images/books/book(6).png';
-  static const String booksBook(7) = 'assets/images/books/book(7).png';
-  static const String booksBook(8) = 'assets/images/books/book(8).png';
+  // static const String booksBook(1) = 'assets/images/books/book(1).png';
+  // static const String booksBook(2) = 'assets/images/books/book(2).png';
+  // static const String booksBook(3) = 'assets/images/books/book(3).png';
+  // static const String booksBook(4) = 'assets/images/books/book(4).png';
+  // static const String booksBook(5) = 'assets/images/books/book(5).png';
+  // static const String booksBook(6) = 'assets/images/books/book(6).png';
+  // static const String booksBook(7) = 'assets/images/books/book(7).png';
+  // static const String booksBook(8) = 'assets/images/books/book(8).png';
   static const String images29 = 'assets/images/29.jpg';
   static const String images30 = 'assets/images/30.jpg';
   static const String imagesAi = 'assets/images/ai.png';

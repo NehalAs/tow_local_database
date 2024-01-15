@@ -1,13 +1,17 @@
+import 'dart:convert';
+import 'dart:math';
 import 'dart:ui';
-
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tow_local_database/cubit/library_cubit.dart';
 import 'package:tow_local_database/cubit/library_state.dart';
 import 'package:tow_local_database/models/book_model.dart';
 import 'package:tow_local_database/reading_list_screen.dart';
+import 'package:tow_local_database/widgets/shelfItem.dart';
 import 'database_helper/Database_helper_1.dart';
 import 'database_helper/database_helper_2.dart';
+import 'package:encrypt/encrypt.dart' as encrypt;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,29 +30,51 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> initializeDatabase() async {
     await LibraryCubit.get(context).databaseHelper1.initDatabase();
     await LibraryCubit.get(context).databaseHelper2.initDatabase();
+    await LibraryCubit.get(context).databaseHelper3.initDatabase();
+  }
+
+  String generateKey(int length) {
+    final Random _random = Random.secure();
+    var values = List<int>.generate(length, (i) => _random.nextInt(256));
+    return base64Url.encode(values);
   }
 
   @override
   Widget build(BuildContext context) {
     LibraryCubit.get(context).getBooksData();
-    Widget targetWidget=InkWell(
-        onTap: (){
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => const ReadingListScreen()));
-        },
-        child: Image.asset('assets/images/desk2.png'));
+    String base64Key = generateKey(32); // Your generated base64 key
+    var keyBytes = base64Decode(base64Key); // Convert to byte array
+
+    final key = encrypt.Key(keyBytes); // Create an encryption key
+    final iv = encrypt.IV.fromLength(16); // Initialization vector
+    final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc)); // Example with AES in CBC mode
+
+    final encrypted = encrypter.encrypt('"name":"nn","cover":"hhh"', iv: iv);
+    final decrypted = encrypter.decrypt(encrypted, iv: iv);
+
+    print('Encrypteddddddddddddddddddddddddddd: ${encrypted.base64}');
+    print('Decrypteddddddd: $decrypted');
+
+    List<Widget> targetWidget=[];
     return BlocConsumer<LibraryCubit, LibraryState>(
       listener: (context, state) {},
       builder: (context, state) {
         LibraryCubit libraryCubit = LibraryCubit.get(context);
+
+
+        // final decrypted = encrypter.decrypt(encrypt.Encrypted.fromBase64(encryptedString), iv: iv);
+        // // Use 'decrypted' which is your original data
+
         return Scaffold(
           floatingActionButton: FloatingActionButton(
-              child: const Icon(Icons.add),
+              backgroundColor: Color(0xff6F4E37),
               onPressed: () {
                 libraryCubit.addBook(
                   name: 'book(9)',
                 );
-              }),
+              },
+              child: const Icon(Icons.add,color: Colors.white,),
+              ),
           body: Stack(
             children: [
               Container(
@@ -70,24 +96,43 @@ class _HomeScreenState extends State<HomeScreen> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate:
+                  ConditionalBuilder(
+                      condition: libraryCubit.books.isEmpty,
+                      builder: (context) => const Center(
+                        child: CircularProgressIndicator(
+                          valueColor:AlwaysStoppedAnimation( Colors.brown),
+                        ),
+                      ),
+                      fallback: (context) =>Expanded(
+                        child: GridView.builder(
+                          gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 3),
-                      itemBuilder: (context, index) =>
-                          shelfItem(libraryCubit.books[index]),
-                      itemCount: libraryCubit.books.length,
-                    ),
+                          itemBuilder: (context, index) =>
+                              ShelfItem(book:libraryCubit.books[index]),
+                          itemCount: libraryCubit.books.length,
+                        ),
+                      ),
                   ),
                   DragTarget<Widget>(
                     onAccept: (receivedWidget) {
-                      setState(() {
-                        targetWidget = receivedWidget;
-                      });
+                        targetWidget.add(Expanded(child: receivedWidget));
                     },
                     builder: (context, candidateData, rejectedData) {
-                      return targetWidget;
+                      return InkWell(
+                          onTap: (){
+                            Navigator.of(context)
+                                .push(MaterialPageRoute(builder: (context) => const ReadingListScreen()));
+                          },
+                          child: Stack(
+                            alignment: Alignment.bottomCenter,
+                            children:[Image.asset('assets/images/desk2.png'),Align(
+                                alignment: Alignment.topCenter,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 50.0),
+                                  child: Row(children:targetWidget),
+                                ))],
+                          ));
                     },
                   ),
                 ],
@@ -99,45 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget shelfItem(BookModel book) => Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          LongPressDraggable(
-            feedback: Container(
-              width: 100,
-              height: 100,
-              child: Image.asset(
-                book.cover!,
-              ),
-            ),
-            childWhenDragging: Container(),
-            onDragCompleted: (){
-              LibraryCubit.get(context).deleteBook(book.id);
-              print('ssssssssssssssssssssssssssssssssssssssssssssss');
-            },
-            child: Image.asset(
-              book.cover!,
-            ),
-          ),
-          Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey
-                        .withOpacity(0.5), // Shadow color with opacity
-                    spreadRadius: 5, // Extent of the shadow in all directions
-                    blurRadius: 7, // Blurring effect
-                    offset: const Offset(0, 3), // Position of the shadow
-                  ),
-                ],
-              ),
-              child: Image.asset(
-                'assets/images/shelf3.png',
-                width: 100,
-                height: 14,
-              )),
-        ],
-      );
+
 }
 
 

@@ -24,15 +24,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch:createMaterialColor(Color(0xff6F4E37)),
+    return BlocProvider(
+      create: (context) => LibraryCubit(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: createMaterialColor(Color(0xff6F4E37)),
 
-      ),
-      home: BlocProvider(
-        create: (context) => LibraryCubit(),
-        child: HomeScreen(),
+        ),
+        home: HomeScreen(),
       ),
     );
   }
@@ -40,7 +40,9 @@ class MyApp extends StatelessWidget {
   MaterialColor createMaterialColor(Color color) {
     List strengths = <double>[.05];
     Map<int, Color> swatch = {};
-    final int r = color.red, g = color.green, b = color.blue;
+    final int r = color.red,
+        g = color.green,
+        b = color.blue;
 
     for (int i = 1; i < 10; i++) {
       strengths.add(0.1 * i);

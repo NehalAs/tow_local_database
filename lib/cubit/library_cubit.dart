@@ -12,6 +12,7 @@ class LibraryCubit extends Cubit<LibraryState> {
   LibraryCubit() : super(LibraryInitial());
   final DatabaseHelper1 databaseHelper1 = DatabaseHelper1();
   final DatabaseHelper2 databaseHelper2 = DatabaseHelper2();
+  final DatabaseHelper2 databaseHelper3 = DatabaseHelper2();
 
   static LibraryCubit get(context) => BlocProvider.of(context);
 
@@ -22,14 +23,25 @@ class LibraryCubit extends Cubit<LibraryState> {
 // }
 
   List<BookModel> books=[];
+  List<BookModel> readingList=[];
   bool isVisible=false;
   getBooksData() async {
+    //emit(GetBooksDataLoadingState());
     books=[];
     var booksData = await databaseHelper1.getFromDatabase1();
   booksData.forEach((element) {
   books.add(BookModel.fromJson(element));
   });
   emit(GetBooksDataState());
+  }
+
+  getReadingListData() async {
+    readingList=[];
+    var booksData = await databaseHelper2.getFromDatabase2();
+  booksData.forEach((element) {
+    readingList.add(BookModel.fromJson(element));
+  });
+  emit(GetReadingListDataState());
   }
 
   List<String> covers=[
@@ -51,11 +63,17 @@ class LibraryCubit extends Cubit<LibraryState> {
     emit(AddBookState());
   }
 
+  addBookToReadingList({required String name,String? cover}) async {
+    int randomIndex = random.nextInt(covers.length);
+    databaseHelper2.insertData(name, cover??covers[randomIndex]);
+    emit(AddBookToReadingListState());
+  }
+
   deleteBook(id)
   async {
-
     databaseHelper1.deleteSpecificData(id);
-    await getBooksData();
+    //await getBooksData();
+    books.removeWhere((element) => element.id==id);
     emit(DeleteBookState());
   }
 

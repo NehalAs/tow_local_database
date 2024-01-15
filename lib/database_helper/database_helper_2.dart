@@ -5,14 +5,14 @@ class DatabaseHelper2 {
   late Database _database;
 
   Future<void> initDatabase() async {
-    //final path = join(await getDatabasesPath(), 'database2.db');
-    _database = await openDatabase('database2.db', version: 1, onCreate: (db, version) {
+    //final path = join(await getDatabasesPath(), 'readingList.db');
+    _database = await openDatabase('readingList.db', version: 1, onCreate: (db, version) {
       // Create tables for Database 2
       db.execute('''
-        CREATE TABLE table2(
+        CREATE TABLE books(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT,
-          value INTEGER
+          cover TEXT
         )
       ''').then((value){
         print('Table created');
@@ -22,26 +22,45 @@ class DatabaseHelper2 {
     });
   }
 
-  // Insert data into Database 2
-  Future<void> insertData(String name, int value) async {
-    await _database.insert('table2', {'name': name, 'value': value});
+  // Insert data into Database 1
+  Future<void> insertData(String name, String cover) async {
+    await _database.insert('books', {'name': name, 'cover': cover});
+    final data = await getFromDatabase2();
+    print(data);
   }
 
-  // Update data in Database 2
-  Future<void> updateData(int id, String name, int value) async {
-    await _database.update('table2', {'name': name, 'value': value},
+  // Update data in Database 1
+  Future<void> updateData(int id, String name, String cover) async {
+    await _database.update('books', {'name': name, 'cover': cover},
         where: 'id = ?', whereArgs: [id]);
   }
 
   Future<List<Map<String, dynamic>>> getFromDatabase2() async {
-    List<Map<String, Object?>> data=await _database.rawQuery('SELECT * FROM table2');
+    List<Map<String, Object?>> data=await _database.rawQuery('SELECT * FROM books');
+    print('get data $data');
     return data;
   }
 
-  // Function to exchange data from Database 1
-  // Future<void> exchangeDataFromDatabase1(List<Map<String, dynamic>> dataFromDatabase1) async {
-  //   for (var data in dataFromDatabase1) {
-  //     insertData(data['name'], data['value']);
-  //   }
-  // }
+  Future<List<Map<String, dynamic>>> selectSpecificDataFromTable2(String columnName, String value) async {
+    try {
+      final List<Map<String, dynamic>> data = await _database.query(
+        'books',
+        where: '$columnName = ?',
+        whereArgs: [value],
+      );
+      return data;
+    } catch (e) {
+      print('Error selecting specific data: $e');
+      return [];
+    }
+  }
+
+  Future<void> deleteSpecificData(int id) async {
+    await _database.delete(
+      'books', // Table name
+      where: 'id = ?', // Use a where clause to specify which rows to delete
+      whereArgs: [id], // Arguments for the where clause
+    );
+  }
+
 }
