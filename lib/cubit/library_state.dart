@@ -8,3 +8,5 @@ class AddBookToReadingListState extends LibraryState {}
 class GetReadingListDataState extends LibraryState {}
 
 class GetBooksDataLoadingState extends LibraryState {}
+class AddBookToHiddenListState extends LibraryState {}
+class GetHiddenListDataState extends LibraryState {}

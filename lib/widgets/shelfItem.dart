@@ -1,39 +1,42 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:tow_local_database/cubit/library_cubit.dart';
 
 import '../models/book_model.dart';
 
 class ShelfItem extends StatelessWidget {
-   ShelfItem({super.key,required this.book});
+   ShelfItem({super.key,required this.book,this.onDragStart,required this.onDragCompleted});
 
- late BookModel book;
+   Function()? onDragStart;
+   late Function() onDragCompleted;
+ late var book;
   @override
   Widget build(BuildContext context) {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
-        LongPressDraggable(
+        if(book is BookModel)
+          LongPressDraggable(
           feedback: SizedBox(
             width: 100,
             height: 100,
             child: Image.asset(
-              book.cover!,
+             book.cover,
             ),
           ),
           childWhenDragging: Container(),
-          onDragCompleted: (){
-            LibraryCubit.get(context).deleteBook(book.id);
-            LibraryCubit.get(context).addBookToReadingList(name:book.name!,cover: book.cover);
-          },
+          onDragCompleted: onDragCompleted,
+          onDragStarted: onDragStart,
           data: SizedBox(
             height: 100,
             width: 100,
             child: Image.asset(
-              book.cover!,
+                book is BookModel?book.cover:'',
             ),
           ),
           child: Image.asset(
-            book.cover!,
+            book is BookModel?book.cover:'',
           ),
         ),
         Container(

@@ -11,7 +11,8 @@ class DatabaseHelper3 {
       db.execute('''
         CREATE TABLE hiddenBooks(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          encryptedData TEXT
+          encryptedData TEXT,
+          key TEXT
         )
       ''').then((value){
         print('Table created');
@@ -22,13 +23,14 @@ class DatabaseHelper3 {
   }
 
   // Insert data into Database 3
-  Future<void> insertData(String encryptedData,) async {
-    await _database.insert('hiddenBooks', {'encryptedData': encryptedData});
+  Future<void> insertData(String encryptedData,String key) async {
+    await _database.insert('hiddenBooks', {'encryptedData': encryptedData,'key':key});
+    print(await getFromDatabase3());
   }
 
   // Update data in Database 3
-  Future<void> updateData(int id, String encryptedData) async {
-    await _database.update('hiddenBooks', {'encryptedData': encryptedData,},
+  Future<void> updateData(int id, String encryptedData,String key) async {
+    await _database.update('hiddenBooks', {'encryptedData': encryptedData,'key':key},
         where: 'id = ?', whereArgs: [id]);
   }
 
